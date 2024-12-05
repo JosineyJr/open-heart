@@ -6,6 +6,7 @@ from app.schemas.retrain import RetrainInput
 from app.ml.utils import append_to_csv, preprocess_data
 from app.config.settings import settings
 from fastapi.middleware.cors import CORSMiddleware
+import pickle
 
 app = FastAPI()
 
@@ -37,6 +38,14 @@ def retrain(input_data: RetrainInput):
     append_to_csv(settings.training_data_path, input_data=input_data)
 
     forecaster, target = preprocess_data()
+
+    forecasterFile = open(settings.forecaster_path, 'wb')
+    pickle.dump(forecaster, forecasterFile)
+    forecasterFile.close()
+
+    targetFile = open(settings.target_path, 'wb')
+    pickle.dump(target, targetFile)
+    targetFile.close()
 
     accuracy = train_model(forecaster, target)
     current_accuracy = "%.2f%%" % (accuracy * 100.0)
